@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"npm run dev --prefix server\"",
+    "dev": "concurrently \"vite\" \"npm run dev --prefix ../server\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "install-all": "npm install && npm install --prefix server"
+    "install-all": "npm install && npm install --prefix ../server"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { getDbMode, readJsonDb, writeJsonDb } from '../config/db.js';
 
 const companySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -14,127 +13,62 @@ export const CompanyModel = mongoose.model('Company', companySchema);
 
 // Get all companies with optional search, city, and average rating filters
 export const getCompanies = async (search = '', city = '', rating = 0) => {
-  if (getDbMode() === 'MongoDB') {
-    let query = {};
-    if (search) {
-      query.name = { $regex: search, $options: 'i' };
-    }
-    if (city) {
-      query.city = { $regex: city, $options: 'i' };
-    }
-    
-    const companies = await CompanyModel.find(query).lean();
-    const ReviewModel = mongoose.model('Review');
-    
-    // Process companies with reviews to compute average rating
-    const processedCompanies = await Promise.all(companies.map(async (company) => {
-      const reviews = await ReviewModel.find({ companyId: company._id }).lean();
-      const avgRating = reviews.length > 0 
-        ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
-        : 0;
-      return {
-        ...company,
-        avgRating,
-        reviewCount: reviews.length
-      };
-    }));
-
-    if (rating > 0) {
-      return processedCompanies.filter(c => Math.round(c.avgRating) === Number(rating));
-    }
-    return processedCompanies;
-  } else {
-    // JSON MODE
-    const db = readJsonDb();
-    let result = db.companies;
-
-    if (search) {
-      const lowerSearch = search.toLowerCase();
-      result = result.filter(c => c.name.toLowerCase().includes(lowerSearch));
-    }
-    if (city) {
-      const lowerCity = city.toLowerCase();
-      result = result.filter(c => c.city.toLowerCase().includes(lowerCity));
-    }
-
-    const processed = result.map(c => {
-      const reviews = db.reviews.filter(r => r.companyId === c._id);
-      const avgRating = reviews.length > 0 
-        ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
-        : 0;
-      return {
-        ...c,
-        avgRating,
-        reviewCount: reviews.length
-      };
-    });
-
-    if (rating > 0) {
-      return processed.filter(c => Math.round(c.avgRating) === Number(rating));
-    }
-    return processed;
+  let query = {};
+  if (search) {
+    query.name = { $regex: search, $options: 'i' };
   }
+  if (city) {
+    query.city = { $regex: city, $options: 'i' };
+  }
+  
+  const companies = await CompanyModel.find(query).lean();
+  const ReviewModel = mongoose.model('Review');
+  
+  // Process companies with reviews to compute average rating
+  const processedCompanies = await Promise.all(companies.map(async (company) => {
+    const reviews = await ReviewModel.find({ companyId: company._id }).lean();
+    const avgRating = reviews.length > 0 
+      ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
+      : 0;
+    return {
+      ...company,
+      avgRating,
+      reviewCount: reviews.length
+    };
+  }));
+
+  if (rating > 0) {
+    return processedCompanies.filter(c => Math.round(c.avgRating) === Number(rating));
+  }
+  return processedCompanies;
 };
 
 // Add new company
 export const addCompany = async (companyData) => {
-  if (getDbMode() === 'MongoDB') {
-    const newCompany = new CompanyModel({
-      name: companyData.name,
-      location: companyData.location,
-      foundedOn: companyData.foundedOn,
-      city: companyData.city,
-      logo: companyData.logo || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop&q=80",
-      description: companyData.description || "No description provided."
-    });
-    const saved = await newCompany.save();
-    return saved.toObject();
-  } else {
-    // JSON MODE
-    const db = readJsonDb();
-    const newCompany = {
-      _id: `comp_${Date.now()}`,
-      name: companyData.name,
-      location: companyData.location,
-      foundedOn: companyData.foundedOn,
-      city: companyData.city,
-      logo: companyData.logo || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop&q=80",
-      description: companyData.description || "No description provided."
-    };
-    db.companies.push(newCompany);
-    writeJsonDb(db);
-    return newCompany;
-  }
+  const newCompany = new CompanyModel({
+    name: companyData.name,
+    location: companyData.location,
+    foundedOn: companyData.foundedOn,
+    city: companyData.city,
+    logo: companyData.logo || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop&q=80",
+    description: companyData.description || "No description provided."
+  });
+  const saved = await newCompany.save();
+  return saved.toObject();
 };
 
 // Get single company details
 export const getCompanyById = async (id) => {
-  if (getDbMode() === 'MongoDB') {
-    const company = await CompanyModel.findById(id).lean();
-    if (!company) return null;
-    const ReviewModel = mongoose.model('Review');
-    const reviews = await ReviewModel.find({ companyId: id }).lean();
-    const avgRating = reviews.length > 0 
-      ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
-      : 0;
-    return {
-      ...company,
-      avgRating,
-      reviewCount: reviews.length
-    };
-  } else {
-    // JSON MODE
-    const db = readJsonDb();
-    const company = db.companies.find(c => c._id === id);
-    if (!company) return null;
-    const reviews = db.reviews.filter(r => r.companyId === id);
-    const avgRating = reviews.length > 0 
-      ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
-      : 0;
-    return {
-      ...company,
-      avgRating,
-      reviewCount: reviews.length
-    };
-  }
+  const company = await CompanyModel.findById(id).lean();
+  if (!company) return null;
+  const ReviewModel = mongoose.model('Review');
+  const reviews = await ReviewModel.find({ companyId: id }).lean();
+  const avgRating = reviews.length > 0 
+    ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) * 10) / 10 
+    : 0;
+  return {
+    ...company,
+    avgRating,
+    reviewCount: reviews.length
+  };
 };
