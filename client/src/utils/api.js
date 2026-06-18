@@ -1,5 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
-// const API_BASE_URL = 'https://mern-stack-project-ijbn.vercel.app/api';
+const API_BASE_URL = 'https://mern-stack-project-3-jy7l.onrender.com/api';
 /**
  * Fetch all companies, with optional search term, city filter, and average rating filter.
  */
