@@ -1,45 +1,33 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { MapPin } from 'lucide-react';
-import { fetchCompanies } from '../utils/api';
+import { getCompaniesAsync, setActiveCompanyId } from '../redux/slices/companySlice';
 import CompanyCard from './CompanyCard';
 
 export default function CompanyList({
-  onCompanyClick,
-  refreshTrigger,
   searchTerm,
   setSearchTerm,
   onAddCompanyClick,
   showToast
 }) {
+  const dispatch = useDispatch();
+  const companiesFromStore = useSelector(state => state.company.companies);
+  const status = useSelector(state => state.company.status);
+  
   const [companies, setCompanies] = useState([]);
   const [cityInput, setCityInput] = useState('Indore, Madhya Pradesh, India');
   const [cityFilter, setCityFilter] = useState('');
   const [sortBy, setSortBy] = useState('name'); // Default sort by Name as in Figma screenshot
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Load companies based on active filters and sort criteria
+  const isLoading = status === 'loading';
+
+  // Load companies based on active filters
   useEffect(() => {
     const loadFilteredCompanies = async () => {
-      setIsLoading(true);
       try {
-        // We call fetchCompanies with searchTerm and the resolved city filter
-        const data = await fetchCompanies(searchTerm, cityFilter);
-        
-        // Handle sorting options
-        let sortedData = [...data];
-        if (sortBy === 'name') {
-          sortedData.sort((a, b) => a.name.localeCompare(b.name));
-        } else if (sortBy === 'rating') {
-          sortedData.sort((a, b) => b.avgRating - a.avgRating);
-        } else if (sortBy === 'location') {
-          sortedData.sort((a, b) => a.city.localeCompare(b.city));
-        }
-        
-        setCompanies(sortedData);
+        dispatch(getCompaniesAsync({ search: searchTerm, city: cityFilter }));
       } catch (err) {
         showToast('Failed to load companies list', 'error');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -48,11 +36,23 @@ export default function CompanyList({
     }, 200);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm, cityFilter, sortBy, refreshTrigger]);
+  }, [dispatch, searchTerm, cityFilter]);
+
+  // Handle sorting locally on the fetched companies
+  useEffect(() => {
+    let sortedData = [...companiesFromStore];
+    if (sortBy === 'name') {
+      sortedData.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === 'rating') {
+      sortedData.sort((a, b) => b.avgRating - a.avgRating);
+    } else if (sortBy === 'location') {
+      sortedData.sort((a, b) => a.city.localeCompare(b.city));
+    }
+    setCompanies(sortedData);
+  }, [companiesFromStore, sortBy]);
 
   // When clicking "Find Company", we resolve the city filter from input
   const handleFindCompany = () => {
-    // If user enters an address, extract the city name (e.g. "Indore, Madhya Pradesh" -> "Indore")
     const extractedCity = cityInput.split(',')[0].trim();
     setCityFilter(extractedCity);
   };
@@ -133,7 +133,7 @@ export default function CompanyList({
             <CompanyCard
               key={company._id}
               company={company}
-              onClick={() => onCompanyClick(company._id)}
+              onClick={() => dispatch(setActiveCompanyId(company._id))}
             />
           ))}
         </div>

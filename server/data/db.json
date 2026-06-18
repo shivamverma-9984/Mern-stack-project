@@ -1,0 +1,64 @@
+{
+  "companies": [
+    {
+      "_id": "comp_1",
+      "name": "TechCorp Solutions",
+      "location": "California, US",
+      "foundedOn": "2015-06-12",
+      "city": "San Francisco",
+      "logo": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop&q=80",
+      "description": "A leading provider of cloud infrastructure and enterprise software tools, empowering businesses worldwide."
+    },
+    {
+      "_id": "comp_2",
+      "name": "Creatives Studio",
+      "location": "New York, US",
+      "foundedOn": "2018-09-01",
+      "city": "New York City",
+      "logo": "https://images.unsplash.com/photo-1561070791-26c113006238?w=100&h=100&fit=crop&q=80",
+      "description": "Award-winning design and marketing agency helping brands connect with their audiences through digital storytelling."
+    },
+    {
+      "_id": "comp_3",
+      "name": "Apex Logistics",
+      "location": "Illinois, US",
+      "foundedOn": "2012-04-18",
+      "city": "Chicago",
+      "logo": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100&h=100&fit=crop&q=80",
+      "description": "Global supply chain and distribution network delivering seamless shipping solutions across North America."
+    }
+  ],
+  "reviews": [
+    {
+      "_id": "rev_1",
+      "companyId": "comp_1",
+      "fullName": "Sarah Jenkins",
+      "subject": "Exceptional Work Culture and Tech Stack",
+      "reviewText": "I've been working at TechCorp for over 2 years now. The engineering culture is phenomenal and we get to work with cutting edge technologies. The management really cares about work-life balance.",
+      "rating": 5,
+      "likes": 8,
+      "createdAt": "2026-02-15T09:30:00.000Z"
+    },
+    {
+      "_id": "rev_2",
+      "companyId": "comp_1",
+      "fullName": "Michael Chang",
+      "subject": "Great benefits but slow promotions",
+      "reviewText": "The salary and perks are excellent. Health insurance, wellness allowance, and free lunches are great. However, climbing the ladder can be slow and bureaucratic.",
+      "rating": 3,
+      "likes": 3,
+      "createdAt": "2026-03-10T14:45:00.000Z"
+    },
+    {
+      "_id": "rev_3",
+      "companyId": "comp_2",
+      "fullName": "Emily Davis",
+      "subject": "Very creative environment, fast-paced",
+      "reviewText": "Creatives Studio is a fun place to work if you love fast pacing and client-facing designs. Work is exciting but can sometimes lead to overtime. Overall, amazing team spirit!",
+      "rating": 4,
+      "likes": 12,
+      "createdAt": "2026-05-01T11:00:00.000Z"
+    }
+  ],
+  "users": []
+}

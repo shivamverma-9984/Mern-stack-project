@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { ThumbsUp, Share2, Star } from 'lucide-react';
-import { likeReview } from '../utils/api';
+import { likeReviewAsync } from '../redux/slices/reviewSlice';
 
-export default function ReviewCard({ review, onLikeUpdated, showToast }) {
+export default function ReviewCard({ review, showToast }) {
+  const dispatch = useDispatch();
   const [isLiking, setIsLiking] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
 
@@ -32,8 +34,7 @@ export default function ReviewCard({ review, onLikeUpdated, showToast }) {
     if (hasLiked || isLiking) return;
     setIsLiking(true);
     try {
-      const updatedReview = await likeReview(review._id);
-      onLikeUpdated(updatedReview);
+      await dispatch(likeReviewAsync(review._id)).unwrap();
       setHasLiked(true);
       showToast('Liked review successfully!', 'success');
     } catch (err) {

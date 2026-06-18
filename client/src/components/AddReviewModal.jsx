@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { X, Star, CheckCircle2 } from 'lucide-react';
-import { createReview } from '../utils/api';
+import { addReviewAsync } from '../redux/slices/reviewSlice';
+import { getCompanyByIdAsync } from '../redux/slices/companySlice';
 import confetti from 'canvas-confetti';
 
 const RATING_DESCRIPTIONS = {
@@ -11,7 +13,10 @@ const RATING_DESCRIPTIONS = {
   5: 'Excellent'
 };
 
-export default function AddReviewModal({ isOpen, onClose, companyId, companyName, user, onReviewAdded, showToast }) {
+export default function AddReviewModal({ isOpen, onClose, companyId, companyName, showToast }) {
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
+
   const [fullName, setFullName] = useState('');
   const [subject, setSubject] = useState('');
   const [reviewText, setReviewText] = useState('');
@@ -63,12 +68,15 @@ export default function AddReviewModal({ isOpen, onClose, companyId, companyName
 
     setIsSubmitting(true);
     try {
-      const savedReview = await createReview(companyId, {
-        fullName,
-        subject,
-        reviewText,
-        rating
-      });
+      await dispatch(addReviewAsync({
+        companyId,
+        reviewData: {
+          fullName,
+          subject,
+          reviewText,
+          rating
+        }
+      })).unwrap();
 
       confetti({
         particleCount: 80,
@@ -76,11 +84,13 @@ export default function AddReviewModal({ isOpen, onClose, companyId, companyName
         origin: { y: 0.6 }
       });
 
-      onReviewAdded(savedReview);
+      // Refresh company details to update average rating and review count
+      dispatch(getCompanyByIdAsync(companyId));
+
       showToast('Review posted successfully!', 'success');
       setIsSuccess(true);
     } catch (err) {
-      showToast(err.message || 'Failed to submit review', 'error');
+      showToast(err || 'Failed to submit review', 'error');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { X, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { createCompany } from '../utils/api';
+import { addCompanyAsync } from '../redux/slices/companySlice';
 import confetti from 'canvas-confetti';
 
-export default function AddCompanyModal({ isOpen, onClose, onCompanyAdded, showToast }) {
+export default function AddCompanyModal({ isOpen, onClose, showToast }) {
+  const dispatch = useDispatch();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -47,7 +49,7 @@ export default function AddCompanyModal({ isOpen, onClose, onCompanyAdded, showT
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const newCompany = await createCompany(formData);
+      await dispatch(addCompanyAsync(formData)).unwrap();
       
       confetti({
         particleCount: 100,
@@ -55,11 +57,10 @@ export default function AddCompanyModal({ isOpen, onClose, onCompanyAdded, showT
         origin: { y: 0.6 }
       });
 
-      onCompanyAdded(newCompany);
       showToast('Company profile created successfully!', 'success');
       setStep(3);
     } catch (err) {
-      showToast(err.message || 'Failed to add company', 'error');
+      showToast(err || 'Failed to add company', 'error');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail } from 'lucide-react';
-import { loginUser } from '../utils/api';
+import { useDispatch } from 'react-redux';
+import { X } from 'lucide-react';
+import { loginAsync } from '../redux/slices/authSlice';
 
-export default function LoginModal({ isOpen, onClose, onLoginSuccess, onSwitchToSignup, showToast }) {
+export default function LoginModal({ isOpen, onClose, onSwitchToSignup, showToast }) {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,17 +20,11 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onSwitchTo
 
     setIsSubmitting(true);
     try {
-      const data = await loginUser({ email, password });
-      
-      // Save in local storage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
+      const data = await dispatch(loginAsync({ email, password })).unwrap();
       showToast(`Welcome back, ${data.user.fullName}!`, 'success');
-      onLoginSuccess(data.user);
       onClose();
     } catch (err) {
-      showToast(err.message || 'Login failed. Check details.', 'error');
+      showToast(err || 'Login failed. Check details.', 'error');
     } finally {
       setIsSubmitting(false);
     }

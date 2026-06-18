@@ -1,52 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ArrowLeft, Plus, Calendar, MapPin, Inbox, SortAsc } from 'lucide-react';
-import { fetchCompanyById, fetchReviews } from '../utils/api';
+import { getCompanyByIdAsync, clearCurrentCompany } from '../redux/slices/companySlice';
+import { getReviewsAsync, clearReviews } from '../redux/slices/reviewSlice';
 import ReviewStats from './ReviewStats';
 import ReviewCard from './ReviewCard';
 import AddReviewModal from './AddReviewModal';
 
-export default function CompanyDetails({ companyId, user, onBack, showToast }) {
-  const [company, setCompany] = useState(null);
-  const [reviews, setReviews] = useState([]);
+export default function CompanyDetails({ companyId, onBack, showToast }) {
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
+  const company = useSelector(state => state.company.currentCompany);
+  const reviews = useSelector(state => state.review.reviews);
+  const companyStatus = useSelector(state => state.company.status);
+  const reviewStatus = useSelector(state => state.review.status);
+
   const [sortBy, setSortBy] = useState('newest');
-  const [isLoading, setIsLoading] = useState(true);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  const isLoading = companyStatus === 'loading' || reviewStatus === 'loading';
 
   // Load Company and Reviews
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const companyData = await fetchCompanyById(companyId);
-        const reviewsData = await fetchReviews(companyId, sortBy);
-        setCompany(companyData);
-        setReviews(reviewsData);
-      } catch (err) {
-        showToast('Failed to load company details', 'error');
-      } finally {
-        setIsLoading(false);
-      }
+    dispatch(getCompanyByIdAsync(companyId));
+    dispatch(getReviewsAsync({ companyId, sortBy }));
+
+    return () => {
+      // Clear data on unmount
+      dispatch(clearCurrentCompany());
+      dispatch(clearReviews());
     };
-    loadData();
-  }, [companyId, sortBy]);
-
-  // Handle new review added
-  const handleReviewAdded = async (newReview) => {
-    try {
-      const companyData = await fetchCompanyById(companyId);
-      setCompany(companyData);
-      
-      const reviewsData = await fetchReviews(companyId, sortBy);
-      setReviews(reviewsData);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Handle like count update
-  const handleLikeUpdated = (updatedReview) => {
-    setReviews(prev => prev.map(r => r._id === updatedReview._id ? updatedReview : r));
-  };
+  }, [dispatch, companyId, sortBy]);
 
   // Helper to format date
   const formatDate = (dateString) => {
@@ -62,7 +46,7 @@ export default function CompanyDetails({ companyId, user, onBack, showToast }) {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !company) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
         <div className="review-count-pill" style={{ padding: '10px 20px', fontSize: '14px', background: '#f1f3f7', color: '#666666' }}>
@@ -170,7 +154,6 @@ export default function CompanyDetails({ companyId, user, onBack, showToast }) {
                 <ReviewCard
                   key={review._id}
                   review={review}
-                  onLikeUpdated={handleLikeUpdated}
                   showToast={showToast}
                 />
               ))}
@@ -198,9 +181,8 @@ export default function CompanyDetails({ companyId, user, onBack, showToast }) {
         onClose={() => setIsReviewModalOpen(false)}
         companyId={company._id}
         companyName={company.name}
-        user={user}
-        onReviewAdded={handleReviewAdded}
         showToast={showToast}
+        sortBy={sortBy}
       />
     </div>
   );

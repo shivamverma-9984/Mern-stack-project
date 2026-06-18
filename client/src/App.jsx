@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Star, Search, Sparkles } from 'lucide-react';
 import CompanyList from './components/CompanyList';
 import CompanyDetails from './components/CompanyDetails';
 import AddCompanyModal from './components/AddCompanyModal';
 import LoginModal from './components/LoginModal';
 import SignupModal from './components/SignupModal';
+import { logout } from './redux/slices/authSlice';
+import { setActiveCompanyId } from './redux/slices/companySlice';
 
 export default function App() {
-  const [activeCompanyId, setActiveCompanyId] = useState(null);
+  const dispatch = useDispatch();
+  const activeCompanyId = useSelector(state => state.company.activeCompanyId);
+  const user = useSelector(state => state.auth.user);
+
   const [isAddCompanyOpen, setIsAddCompanyOpen] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [toasts, setToasts] = useState([]);
   
   // Auth States
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('user') || 'null');
-    } catch (e) {
-      return null;
-    }
-  });
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
 
@@ -33,18 +31,8 @@ export default function App() {
     }, 4000);
   };
 
-  const triggerListRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
-  };
-
-  const handleCompanyAdded = () => {
-    triggerListRefresh();
-  };
-
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+    dispatch(logout());
     showToast('Logged out successfully', 'info');
   };
 
@@ -63,7 +51,7 @@ export default function App() {
       {/* Navbar Header from Figma */}
       <header className="app-header">
         {/* Left: Logo */}
-        <div className="logo-container" onClick={() => { setActiveCompanyId(null); setSearchTerm(''); }} style={{ cursor: 'pointer' }}>
+        <div className="logo-container" onClick={() => { dispatch(setActiveCompanyId(null)); setSearchTerm(''); }} style={{ cursor: 'pointer' }}>
           <div className="logo-icon">
             <Star size={16} fill="white" color="white" />
           </div>
@@ -132,17 +120,13 @@ export default function App() {
         {activeCompanyId ? (
           <CompanyDetails
             companyId={activeCompanyId}
-            user={user}
             onBack={() => {
-              setActiveCompanyId(null);
-              triggerListRefresh();
+              dispatch(setActiveCompanyId(null));
             }}
             showToast={showToast}
           />
         ) : (
           <CompanyList
-            onCompanyClick={setActiveCompanyId}
-            refreshTrigger={refreshTrigger}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             onAddCompanyClick={() => {
@@ -162,7 +146,6 @@ export default function App() {
       <AddCompanyModal
         isOpen={isAddCompanyOpen}
         onClose={() => setIsAddCompanyOpen(false)}
-        onCompanyAdded={handleCompanyAdded}
         showToast={showToast}
       />
 
@@ -170,7 +153,6 @@ export default function App() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
-        onLoginSuccess={setUser}
         onSwitchToSignup={() => {
           setIsLoginOpen(false);
           setIsSignupOpen(true);
@@ -182,7 +164,6 @@ export default function App() {
       <SignupModal
         isOpen={isSignupOpen}
         onClose={() => setIsSignupOpen(false)}
-        onSignupSuccess={setUser}
         onSwitchToLogin={() => {
           setIsSignupOpen(false);
           setIsLoginOpen(true);

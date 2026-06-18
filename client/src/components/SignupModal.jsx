@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { X } from 'lucide-react';
-import { signupUser } from '../utils/api';
+import { signupAsync } from '../redux/slices/authSlice';
 
-export default function SignupModal({ isOpen, onClose, onSignupSuccess, onSwitchToLogin, showToast }) {
+export default function SignupModal({ isOpen, onClose, onSwitchToLogin, showToast }) {
+  const dispatch = useDispatch();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,21 +33,16 @@ export default function SignupModal({ isOpen, onClose, onSignupSuccess, onSwitch
 
     setIsSubmitting(true);
     try {
-      const data = await signupUser({
+      const data = await dispatch(signupAsync({
         fullName,
         email,
         password
-      });
-
-      // Save session in local storage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      })).unwrap();
 
       showToast(`Account created! Welcome, ${data.user.fullName}!`, 'success');
-      onSignupSuccess(data.user);
       onClose();
     } catch (err) {
-      showToast(err.message || 'Registration failed. Try again.', 'error');
+      showToast(err || 'Registration failed. Try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
