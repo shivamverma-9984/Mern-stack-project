@@ -1,0 +1,19 @@
+// Source - https://stackoverflow.com/q/76576788
+// Posted by Zeth, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-06-19, License - CC BY-SA 4.0
+
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "dist/server.js",
+      "use": "@now/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/server.js"
+    }
+  ]
+}
