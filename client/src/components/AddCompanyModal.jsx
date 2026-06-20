@@ -116,12 +116,12 @@ export default function AddCompanyModal({ isOpen, onClose, showToast }) {
 
               <div className="form-field-row">
                 <div className="form-field-group">
-                  <label htmlFor="city">City *</label>
+                  <label htmlFor="city">Address *</label>
                   <input
                     type="text"
                     id="city"
                     name="city"
-                    placeholder="e.g. Indore"
+                    placeholder="e.g. AB Road New Pralasia, Indore"
                     value={formData.city}
                     onChange={handleInputChange}
                     required

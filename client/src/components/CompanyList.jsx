@@ -84,18 +84,21 @@ export default function CompanyList({
           </div>
         </div>
 
-        {/* Find Company Button */}
-        <button className="btn-purple" onClick={handleFindCompany}>
-          Find Company
-        </button>
+        {/* Buttons Row */}
+        <div className="filters-buttons-row">
+          {/* Find Company Button */}
+          <button className="btn-purple" onClick={handleFindCompany}>
+            Find Company
+          </button>
 
-        {/* Add Company Button */}
-        <button className="btn-purple-add" onClick={onAddCompanyClick}>
-          + Add Company
-        </button>
+          {/* Add Company Button */}
+          <button className="btn-purple-add" onClick={onAddCompanyClick}>
+            + Add Company
+          </button>
+        </div>
 
         {/* Sort Selector */}
-        <div className="filter-group" style={{ marginLeft: 'auto' }}>
+        <div className="filter-group sort-group">
           <span className="filter-label">Sort:</span>
           <select
             className="sort-select"

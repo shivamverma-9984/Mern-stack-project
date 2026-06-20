@@ -91,7 +91,7 @@ export default function App() {
               >
                 {getInitials(user.fullName)}
               </div>
-              <span style={{ fontSize: '13px', color: '#333333', fontWeight: '500' }}>
+              <span className="header-user-greeting" style={{ fontSize: '13px', color: '#333333', fontWeight: '500' }}>
                 Hi, {user.fullName.split(' ')[0]}
               </span>
               <button

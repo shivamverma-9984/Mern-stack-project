@@ -98,7 +98,7 @@ export default function CompanyCard({ company, onClick }) {
           
           <div className="company-address-txt">
             <MapPin size={12} style={{ color: '#94a3b8' }} />
-            <span>{company.location || `${company.city}, India`}</span>
+            <span>{`${company.city}, ${company.location}`}</span>
           </div>
 
           <div className="company-rating-row">
